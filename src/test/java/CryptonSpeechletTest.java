@@ -1,3 +1,4 @@
+/*
 import com.amazon.speech.json.SpeechletRequestEnvelope;
 import com.amazon.speech.speechlet.IntentRequest;
 import com.amazon.speech.speechlet.SpeechletResponse;
@@ -7,6 +8,7 @@ import org.json.JSONException;
 
 import java.io.IOException;
 
+import static com.amazon.speech.json.SpeechletRequestEnvelope.*;
 import static org.junit.Assert.*;
 
 public class CryptonSpeechletTest {
@@ -21,11 +23,7 @@ public class CryptonSpeechletTest {
         catch (JSONException e) {
             e.printStackTrace();
         }
-        try {
-            SpeechletRequestEnvelope<IntentRequest> testResponse = new SpeechletRequestEnvelope<IntentRequest>.fromJson(json);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        Builder<IntentRequest> builder = new SpeechletRequestEnvelope.builder();
     }
-}
+}*/

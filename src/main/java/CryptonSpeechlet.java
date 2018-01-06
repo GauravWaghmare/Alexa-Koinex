@@ -4,13 +4,14 @@ import com.amazon.speech.speechlet.* ;
 import com.amazon.speech.slu.* ;
 import com.amazon.speech.json.* ;
 import com.amazon.speech.ui.* ;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.ProtocolException;
+import java.nio.charset.Charset;
+
 import org.json.JSONObject;
 import org.json.JSONException;
 
@@ -69,19 +70,17 @@ public class CryptonSpeechlet implements SpeechletV2 {
         String urlResponse = "";
         try {
             URL url = new URL(urlString);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.connect();
 
-            log.info("HTTP response code={}", connection.getResponseCode());
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuilder results = new StringBuilder();
             String line;
-            while ((line = reader.readLine()) != null) {
-                results.append(line);
+            InputStreamReader inputStream = null;
+            BufferedReader bufferedReader = null;
+            StringBuilder builder = new StringBuilder();
+            inputStream = new InputStreamReader(url.openStream(), Charset.forName("utf-8"));
+            bufferedReader = new BufferedReader(inputStream);
+            while ((line = bufferedReader.readLine()) != null) {
+                builder.append(line);
             }
-            urlResponse = results.toString();
+            urlResponse = builder.toString();
         }
         catch (MalformedURLException e) {
             e.printStackTrace();
@@ -92,7 +91,9 @@ public class CryptonSpeechlet implements SpeechletV2 {
         catch (IOException e) {
             e.printStackTrace();
         }
-        log.info("getUrlResponse url={} urlResponse={}", urlString, urlResponse);
+
+//        log.info("getUrlResponse url={} urlResponse={}", urlString, urlResponse);
+
         return urlResponse;
     }
 
@@ -105,28 +106,31 @@ public class CryptonSpeechlet implements SpeechletV2 {
 
         String symbol = "";
         slotValue = slotValue.toLowerCase();
-        if (slotValue == "bitcoin")
+        if (slotValue.equals("bitcoin"))
             symbol = "BTC";
-        else if (slotValue == "ether")
+        else if (slotValue.equals("ether"))
             symbol = "ETH";
-        else if (slotValue == "ripple")
+        else if (slotValue.equals("ripple"))
             symbol = "XRP";
-        else if (slotValue == "litecoin")
+        else if (slotValue.equals("litecoin"))
             symbol = "LTC";
-        else if (slotValue == "bitcoin cash")
+        else if (slotValue.equals("bitcoin cash"))
             symbol = "BCH";
-        else if (slotValue == "iota")
+        else if (slotValue.equals("iota"))
             symbol = "MIOTA";
-        else if (slotValue == "omisego")
+        else if (slotValue.equals("omisego"))
             symbol = "OMG";
-        else if (slotValue == "golem")
+        else if (slotValue.equals("golem"))
             symbol = "GNT";
 
         String price = "";
         try {
         // parse the output string
         JSONObject responseObject = new JSONObject(resultString).getJSONObject("prices");
-        price = responseObject.getString(symbol).toString();
+        if (symbol.length() == 0)
+            price = "not yet in our domain. Are you sure you said the right name?";
+        else
+            price = responseObject.getString(symbol).toString();
 
         }
         catch (JSONException e) {
@@ -137,22 +141,11 @@ public class CryptonSpeechlet implements SpeechletV2 {
         return getTellResponse("Crypton", speechText);
     };
 
-    /**
-     * Creates a {@code SpeechletResponse} for the help intent.
-     *
-     * @return SpeechletResponse spoken and visual response for the given intent
-     */
     private SpeechletResponse getHelpResponse() {
         String speechText = "You can say hello to me!";
         return getAskResponse("HelloWorld", speechText);
     }
 
-    /**
-     * Helper method that creates a card object.
-     * @param title title of the card
-     * @param content body of the card
-     * @return SimpleCard the display card to be sent along with the voice response.
-     */
     private SimpleCard getSimpleCard(String title, String content) {
         SimpleCard card = new SimpleCard();
         card.setTitle(title);
@@ -161,11 +154,6 @@ public class CryptonSpeechlet implements SpeechletV2 {
         return card;
     }
 
-    /**
-     * Helper method for retrieving an OutputSpeech object when given a string of TTS.
-     * @param speechText the text that should be spoken out to the user.
-     * @return an instance of SpeechOutput.
-     */
     private PlainTextOutputSpeech getPlainTextOutputSpeech(String speechText) {
         PlainTextOutputSpeech speech = new PlainTextOutputSpeech();
         speech.setText(speechText);
@@ -173,12 +161,6 @@ public class CryptonSpeechlet implements SpeechletV2 {
         return speech;
     }
 
-    /**
-     * Helper method that returns a reprompt object. This is used in Ask responses where you want
-     * the user to be able to respond to your speech.
-     * @param outputSpeech The OutputSpeech object that will be said once and repeated if necessary.
-     * @return Reprompt instance.
-     */
     private Reprompt getReprompt(OutputSpeech outputSpeech) {
         Reprompt reprompt = new Reprompt();
         reprompt.setOutputSpeech(outputSpeech);
@@ -186,12 +168,6 @@ public class CryptonSpeechlet implements SpeechletV2 {
         return reprompt;
     }
 
-    /**
-     * Helper method for retrieving an Ask response with a simple card and reprompt included.
-     * @param cardTitle Title of the card that you want displayed.
-     * @param speechText speech text that will be spoken to the user.
-     * @return the resulting card and speech text.
-     */
     private SpeechletResponse getAskResponse(String cardTitle, String speechText) {
         SimpleCard card = getSimpleCard(cardTitle, speechText);
         PlainTextOutputSpeech speech = getPlainTextOutputSpeech(speechText);
