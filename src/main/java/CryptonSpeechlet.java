@@ -42,14 +42,20 @@ public class CryptonSpeechlet implements SpeechletV2 {
         Slot currencySlot = intent.getSlot("currency");
 
         String intentName = (intent != null) ? intent.getName() : null;
+
         String slotValue = (currencySlot != null) ? currencySlot.getValue() : null;
 
         if ("QueryPriceIntent".equals(intentName)) {
             return getPriceResponse(slotValue);
-        } else if ("AMAZON.HelpIntent".equals(intentName)) {
+        }
+        else if ("AMAZON.HelpIntent".equals(intentName)) {
             return getHelpResponse();
-        } else {
-            return getAskResponse("Crypton", "This is unsupported.  Please try something else.");
+        }
+        else if ("AMAZON.StopIntent".equals((intentName))) {
+            return getStopResponse();
+        }
+        else {
+            return getAskResponse("Crypton", "This is unsupported. Please try something else.");
         }
     }
 
@@ -61,8 +67,13 @@ public class CryptonSpeechlet implements SpeechletV2 {
     }
 
     private SpeechletResponse getWelcomeResponse() {
-        String speechText = "Welcome to the Crypton, you can ask for cryptocurrency prices on Koinex";
+        String speechText = "Welcome to Crypton, you can ask for cryptocurrency prices on Koinex";
         return getAskResponse("Crypton", speechText);
+    }
+
+    private SpeechletResponse getStopResponse() {
+        String speechText = "See you.";
+        return getTellResponse("Crypton", speechText);
     }
 
     private String getUrlResponse(String urlString) {
@@ -127,8 +138,8 @@ public class CryptonSpeechlet implements SpeechletV2 {
         try {
         // parse the output string
         JSONObject responseObject = new JSONObject(resultString).getJSONObject("prices");
-        if (symbol.length() == 0)
-            price = "not yet in our domain. Are you sure you said the right name?";
+        if ("".equals(symbol))
+            return getAskResponse("Crypton","Are you sure you said the right name?");
         else
             price = responseObject.getString(symbol).toString();
 
@@ -142,8 +153,8 @@ public class CryptonSpeechlet implements SpeechletV2 {
     };
 
     private SpeechletResponse getHelpResponse() {
-        String speechText = "You can say hello to me!";
-        return getAskResponse("HelloWorld", speechText);
+        String speechText = "You can ask prices for cryptocurrencies. Try asking the price of bitcoin.";
+        return getAskResponse("Crypton", speechText);
     }
 
     private SimpleCard getSimpleCard(String title, String content) {
