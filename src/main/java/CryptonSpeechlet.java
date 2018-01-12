@@ -60,6 +60,7 @@ public class CryptonSpeechlet implements SpeechletV2 {
                 PlainTextOutputSpeech speech = getPlainTextOutputSpeech("Which currency?");
 
                 SpeechletResponse speechletResponse = new SpeechletResponse();
+                speechletResponse.setCard(getSimpleCard("Crypton", "Which currency?"));
                 speechletResponse.setOutputSpeech(speech);
                 speechletResponse.setDirectives(directiveList);
                 speechletResponse.setShouldEndSession(false);
