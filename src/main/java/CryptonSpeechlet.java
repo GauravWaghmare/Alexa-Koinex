@@ -1,3 +1,8 @@
+import com.amazon.speech.speechlet.dialog.directives.DelegateDirective;
+import com.amazon.speech.speechlet.dialog.directives.DialogIntent;
+import com.amazon.speech.speechlet.dialog.directives.DialogSlot;
+import com.amazon.speech.speechlet.Directive;
+import com.amazon.speech.speechlet.IntentRequest.DialogState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.amazon.speech.speechlet.* ;
@@ -43,7 +48,14 @@ public class CryptonSpeechlet implements SpeechletV2 {
 
         String intentName = (intent != null) ? intent.getName() : null;
 
-        String slotValue = (currencySlot != null) ? currencySlot.getValue() : null;
+        if (request.getDialogState().equals("IN PROGRESS") && currencySlot.getValue() == null) {
+            DelegateDirective dd = new DelegateDirective();
+            
+            return ElicitSlotDirective;
+        }
+        else {
+            String slotValue = currencySlot.getValue();
+        }
 
         if ("QueryPriceIntent".equals(intentName)) {
             return getPriceResponse(slotValue);
