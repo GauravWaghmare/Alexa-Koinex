@@ -1,6 +1,4 @@
-import com.amazon.speech.speechlet.dialog.directives.DelegateDirective;
-import com.amazon.speech.speechlet.dialog.directives.DialogIntent;
-import com.amazon.speech.speechlet.dialog.directives.DialogSlot;
+import com.amazon.speech.speechlet.dialog.directives.*;
 import com.amazon.speech.speechlet.Directive;
 import com.amazon.speech.speechlet.IntentRequest.DialogState;
 import org.slf4j.Logger;
@@ -16,6 +14,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.ProtocolException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONObject;
 import org.json.JSONException;
@@ -44,21 +44,31 @@ public class CryptonSpeechlet implements SpeechletV2 {
                 requestEnvelope.getSession().getSessionId());
 
         Intent intent = request.getIntent();
-        Slot currencySlot = intent.getSlot("currency");
 
         String intentName = (intent != null) ? intent.getName() : null;
+        Slot slot = intent.getSlot("currency");
 
-        if (request.getDialogState().equals("IN PROGRESS") && currencySlot.getValue() == null) {
-            DelegateDirective dd = new DelegateDirective();
-            
-            return ElicitSlotDirective;
-        }
-        else {
-            String slotValue = currencySlot.getValue();
-        }
+        DialogState dialogueState = request.getDialogState();
 
         if ("QueryPriceIntent".equals(intentName)) {
-            return getPriceResponse(slotValue);
+            if (slot.getValue() == null) {
+//                DelegateDirective dd = new DelegateDirective();
+                ElicitSlotDirective elicitSlotDirective = new ElicitSlotDirective();
+                List<Directive> directiveList = new ArrayList<Directive>();
+                directiveList.add(elicitSlotDirective);
+
+                PlainTextOutputSpeech speech = getPlainTextOutputSpeech("Which currency?");
+
+                SpeechletResponse speechletResponse = new SpeechletResponse();
+                speechletResponse.setOutputSpeech(speech);
+                speechletResponse.setDirectives(directiveList);
+                speechletResponse.setShouldEndSession(false);
+                return speechletResponse;
+            }
+            else {
+                String slotValue = slot.getValue();
+                return getPriceResponse(slotValue);
+            }
         }
         else if ("AMAZON.HelpIntent".equals(intentName)) {
             return getHelpResponse();
