@@ -1,6 +1,5 @@
 import com.amazon.speech.speechlet.dialog.directives.*;
 import com.amazon.speech.speechlet.Directive;
-import com.amazon.speech.speechlet.IntentRequest.DialogState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.amazon.speech.speechlet.* ;
@@ -15,7 +14,10 @@ import java.io.IOException;
 import java.net.ProtocolException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Iterator;
 
 import org.json.JSONObject;
 import org.json.JSONException;
@@ -48,12 +50,29 @@ public class CryptonSpeechlet implements SpeechletV2 {
         String intentName = (intent != null) ? intent.getName() : null;
         Slot slot = intent.getSlot("currency");
 
-        DialogState dialogueState = request.getDialogState();
+//        DialogState dialogueState = request.getDialogState();
 
         if ("QueryPriceIntent".equals(intentName)) {
             if (slot.getValue() == null) {
+                log.info("Asking slot.");
 //                DelegateDirective dd = new DelegateDirective();
+                DialogIntent dialogIntent = new DialogIntent();
+                dialogIntent.setName(intentName);
+                Map<String,DialogSlot> dialogSlots = new HashMap<String,DialogSlot>();
+                Iterator iter = intent.getSlots().entrySet().iterator();
+                while (iter.hasNext()) {
+                    Map.Entry pair = (Map.Entry)iter.next();
+                    DialogSlot dialogSlot = new DialogSlot();
+                    Slot mySlot = (Slot) pair.getValue();
+                    dialogSlot.setName(mySlot.getName());
+                    dialogSlots.put((String) pair.getKey(), dialogSlot);
+                }
+
+                dialogIntent.setSlots(dialogSlots);
+
                 ElicitSlotDirective elicitSlotDirective = new ElicitSlotDirective();
+                elicitSlotDirective.setSlotToElicit("currency");
+                elicitSlotDirective.setUpdatedIntent(dialogIntent);
                 List<Directive> directiveList = new ArrayList<Directive>();
                 directiveList.add(elicitSlotDirective);
 
