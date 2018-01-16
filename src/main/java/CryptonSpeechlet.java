@@ -86,7 +86,7 @@ public class CryptonSpeechlet implements SpeechletV2 {
                 return speechletResponse;
             }
             else {
-                String slotValue = slot.getValue();
+                String slotValue = slot.getResolutions().getResolutionAtIndex(0).getValueWrapperAtIndex(0).getValue().getName();
                 return getPriceResponse(slotValue);
             }
         }
