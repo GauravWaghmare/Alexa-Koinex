@@ -93,7 +93,7 @@ public class CryptonSpeechlet implements SpeechletV2 {
         else if ("AMAZON.HelpIntent".equals(intentName)) {
             return getHelpResponse();
         }
-        else if ("AMAZON.StopIntent".equals((intentName))) {
+        else if ("AMAZON.StopIntent".equals(intentName) || "AMAZON.CancelIntent".equals(intentName)) {
             return getStopResponse();
         }
         else {
